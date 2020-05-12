@@ -2,101 +2,170 @@ package com.capgemini.go.controller;
 
 import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import org.apache.log4j.Logger;
-
-import com.capgemini.go.bean.RetailerInventoryBean;
-import com.capgemini.go.exception.RetailerInventoryException;
 import com.capgemini.go.service.RetailerInventoryService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.capgemini.go.bean.RetailerInventoryBean;
+import com.capgemini.go.dto.RetailerInventoryDTO;
+import com.capgemini.go.exception.RetailerInventoryException;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200")
-@RequestMapping("/RetailerInventory")
+@RequestMapping("/getRetailerInventory")
 public class RetailerInventoryController {
-	
-	//private Logger logger = Logger.getRootLogger();
 	
 	@Autowired
 	private RetailerInventoryService retailerInventoryService;
-
-	public RetailerInventoryService getRetailerInventoryService() {
-		return retailerInventoryService;
-	}
-
-	public void setRetailerInventoryService(RetailerInventoryService retailerInventoryService) {
-		this.retailerInventoryService = retailerInventoryService;
-	}
 		
-	
-	
-	 
-	
 	@ResponseBody
-	@PostMapping("/RetailerList")
-	public String getRetailerList (@ResponseBody) {
-		//logger.info("getRetailerList - " + "Request for Retailer List Received");
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode dataResponse = mapper.createObjectNode();
-		JsonArray retailerList = new JsonArray();
-		try {
-			List<RetailerInventoryBean> result = this.retailerInventoryService.getListOfRetailers();
-			for (RetailerInventoryBean item : result) {
-				JsonObject retailerObj = new JsonObject();
-				retailerObj.addProperty ("retailerId", item.getRetailerId());
-				retailerObj.addProperty("retailerName", item.getRetailerName());
-				retailerList.add(retailerObj);
+	@GetMapping("/getDeliveryTimeReport")
+	public List<RetailerInventoryBean> getDeliveryTimeReport(@RequestParam String retailerId, @RequestParam int reportType)
+	{
+		
+		List<RetailerInventoryBean> result = null;
+		switch (reportType) {
+		case 1: {
+			try {
+				result = retailerInventoryService.getItemWiseDeliveryTimeReport(retailerId);
+			} catch (RetailerInventoryException error) {
+				error.printStackTrace();
+				System.out.println("Delivery Time Report - " + error.getMessage());
 			}
-		} catch (Exception error) {
-			//logger.error("getRetailerList - " + error.getMessage());
-			((ObjectNode) dataResponse).put("Error", error.getMessage());
-			return dataResponse.toString();
+			break;
 		}
-		//logger.info("getRetailerList - " + "Sent requested data");
-		return retailerList.toString();
+		case 2: {
+			try {
+				result = retailerInventoryService.getCategoryWiseDeliveryTimeReport(retailerId);
+			} catch (RetailerInventoryException error) {
+				error.printStackTrace();
+				System.out.println("Delivery Time Report - " + error.getMessage());
+			}
+			break;
+		}
+		default: {		
+			System.out.println("Delivery Time Report - " + "Invalid Argument Recieved");
+		}
+	}
+	
+		return result;
+		
+		}
+	@ResponseBody
+	@GetMapping("/ShelfTimeReport")
+	public List<RetailerInventoryBean> getShelfTimeReport(@RequestParam String retailerId, @RequestParam int reportType) {
+		// logger.info("getShelfTimeReport - " + "Request for Shelf Time Report Received");	
+		Calendar dateSelection = Calendar.getInstance();
+		List<RetailerInventoryBean> result = null;
+		switch (reportType) {
+		case 1: {
+			try {
+				result = retailerInventoryService.getMonthlyShelfTimeReport(retailerId, dateSelection);
+			} catch (RetailerInventoryException error) {
+				// logger.error("getShelfTimeReport - " + error.getMessage());
+				error.printStackTrace();
+				System.out.println("Shelf Time Report - " + error.getMessage());
+			}
+			break;
+		}
+
+		case 2: {
+			try {
+				result = retailerInventoryService.getQuarterlyShelfTimeReport(retailerId, dateSelection);
+			} catch (RetailerInventoryException error) {
+				// logger.error("getShelfTimeReport - " + error.getMessage());
+					error.printStackTrace();
+					System.out.println("Shelf Time Report - " + error.getMessage());
+			}
+			break;
+		}
+
+		case 3: {
+			try {
+				result = retailerInventoryService.getYearlyShelfTimeReport(retailerId, dateSelection);
+			} catch (RetailerInventoryException error) {
+				// logger.error("getShelfTimeReport - " + error.getMessage());
+				error.printStackTrace();
+				System.out.println("Shelf Time Report - " + error.getMessage());
+			}
+			break;
+		}
+		default: {
+			// logger.error("getShelfTimeReport - " + "Invalid Argument Received");
+			System.out.println("Shelf Time Report - " + "Invalid Argument Recieved");
+		}
+		}
+		return result;
+
 	}
 	
 	@ResponseBody
-	@GetMapping("/RetailerInventoryById/{retailerId}")
-	public String getRetailerInventoryById (@PathVariable String retailerId) {
-		logger.info("getRetailerInventoryById - " + "Request for " + retailerId + " Inventory Received");
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode dataResponse = mapper.createObjectNode();
-		JsonArray itemList = new JsonArray();
+	@GetMapping("/getProductRecieveTime")
+	public String getUpdateProductRecieveTimeStamp(@RequestBody RetailerInventoryDTO retailerInventoryDTO)
+	{
+		String status="Product Timestamp updated";
 		try {
-			List<RetailerInventoryBean> result = this.retailerInventoryService.getInventoryById(retailerId);
-			for (RetailerInventoryBean item : result) {
-				JsonObject itemObj = new JsonObject();
-				itemObj.addProperty ("retailerId", item.getRetailerId());
-				itemObj.addProperty("retailerName", item.getRetailerName());
-				itemObj.addProperty("productCategoryNumber", item.getProductCategoryNumber());
-				itemObj.addProperty("productCategoryName", item.getProductCategoryName());
-				itemObj.addProperty("productName", item.getProductName());
-				itemObj.addProperty("productUniqueId", item.getProductUniqueId());
-				itemList.add(itemObj);
-			}
-		} catch (Exception error) {
-			logger.error("getRetailerInventoryById - " + error.getMessage());
-			((ObjectNode) dataResponse).put("Error", error.getMessage());
-			return dataResponse.toString();
+			retailerInventoryService.updateProductRecieveTimeStamp(retailerInventoryDTO);
+		}catch (RetailerInventoryException error) {
+			error.printStackTrace();
+			System.out.println("Product Recieve Time - " + error.getMessage());
 		}
-		logger.info("getRetailerInventoryById - " + "Sent requested data");
-		return itemList.toString();
+		return status;
+		
 	}
 	
-	 
+	@ResponseBody
+	@GetMapping("/getProductSaleTime")
+	public String getUpdateProductSaleTimeStamp(@RequestBody RetailerInventoryDTO retailerInventoryDTO)
+	{
+		String status="Product Timestamp updated";
+		try {
+			retailerInventoryService.updateProductSaleTimeStamp(retailerInventoryDTO);
+		}catch (RetailerInventoryException error) {
+			error.printStackTrace();
+			System.out.println("Product Sale Time - " + error.getMessage());
+		}
+		return status;
+		
+	}
+	
+	@ResponseBody
+	@GetMapping("/RetailerList")
+	public List<RetailerInventoryDTO> getRetailerList () {
+		List<RetailerInventoryDTO> result = null;
+		try {
+			result = this.retailerInventoryService.getListOfRetailers();
+
+		} catch (Exception error) {
+			error.printStackTrace();
+			System.out.println("Retailer List - " + error.getMessage());
+		}
+		return result;
+	}
+	
+
+	@GetMapping("/RetailerInventoryById")
+	public List<RetailerInventoryDTO> getRetailerInventoryById (@RequestParam String retailerId) {
+		
+		List<RetailerInventoryDTO> result = null;
+		try {
+			result = this.retailerInventoryService.getInventoryById(retailerId);
+		} catch (Exception error) {
+			error.printStackTrace();
+			System.out.println("Retailer List By Invenory By Id - " + error.getMessage());
+		}
+		return result;
+	}
+
+}
+	
+	
+	
+	
+
+

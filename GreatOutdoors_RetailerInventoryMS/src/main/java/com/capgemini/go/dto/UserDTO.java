@@ -10,10 +10,8 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "USER")
 public class UserDTO implements Serializable {
-
 	
 	private static final long serialVersionUID = -8450180103620249767L;
-
 	
 	@Column(name = "USER_NAME", unique = false, nullable = false, length = 50)
 	private String userName;
@@ -33,10 +31,7 @@ public class UserDTO implements Serializable {
 
 	@Column(name = "USER_CATEGORY", unique = false, nullable = false, length = 1)
 	private int userCategory;
-	/*********************
-	 * Category Can only be 1,2,3,4 where 1 = GO ADMIN 2 = Sales Representative 3 =
-	 * Retailer 4 = Product Master
-	 *************************/
+	
 	@Column(name = "USER_ACTIVE_STATUS", unique = false, nullable = false, length = 1)
 	private boolean userActiveStatus;
 

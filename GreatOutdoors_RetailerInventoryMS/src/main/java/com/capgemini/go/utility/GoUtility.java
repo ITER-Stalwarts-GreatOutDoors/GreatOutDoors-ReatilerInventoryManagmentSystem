@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.time.Period;
 import java.util.Calendar;
 
+import org.springframework.stereotype.Component;
+
 import com.capgemini.go.exception.ExceptionConstants;
 
 public class GoUtility {
@@ -15,14 +17,11 @@ public class GoUtility {
 		case 3: {return "MOUNTAINEERING";}
 		case 4: {return "OUTDOOR";}
 		case 5: {return "PERSONAL";}
-		default : {return "OTHER";}
-		
+		default : {return "OTHER";}		
 	}
-
 }
 	public static Period calculatePeriod(Calendar timestamp1, Calendar timestamp2) throws RuntimeException{
 		if (timestamp1.getTime().after(timestamp2.getTime())) {
-			//logger.error("calculatePeriod - " + ExceptionConstants.INAPPROPRIATE_ARGUMENT_PASSED);
 			throw new RuntimeException ("calculatePeriod - " + ExceptionConstants.INAPPROPRIATE_ARGUMENT_PASSED);
 		}
 		else {
@@ -31,10 +30,8 @@ public class GoUtility {
 			int remainingDays = (int) (days % 365);
 			int monthsElapsed = remainingDays / 30;
 			int daysElapsed = remainingDays % 30;
-			//logger.info("calculatePeriod - {Years: " + yearsElapsed + " Months: " + monthsElapsed + " Days: " + daysElapsed + "}");
 			return Period.of (yearsElapsed, monthsElapsed, daysElapsed);
-		}
-		
+		}		
 	}
 	public static boolean comparePeriod (Period p1, Period p2) {
 		if (p1.getYears() > p2.getYears()) {

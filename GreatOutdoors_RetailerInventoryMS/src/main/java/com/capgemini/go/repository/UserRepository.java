@@ -2,8 +2,8 @@ package com.capgemini.go.repository;
 
 import org.springframework.data.repository.CrudRepository;
 
-import com.capgemini.go.bean.RetailerInventoryBean;
+import com.capgemini.go.dto.UserDTO;
 
-public interface UserRepository extends CrudRepository<RetailerInventoryBean, String> {
+public interface UserRepository extends CrudRepository<UserDTO, String> {
 
 }
